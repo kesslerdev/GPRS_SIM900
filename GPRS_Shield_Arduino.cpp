@@ -40,6 +40,9 @@ GPRS::GPRS(uint8_t tx, uint8_t rx, uint32_t baudRate): gprsSerial(tx, rx) {
 }
 
 bool GPRS::init(void) {
+    if(!inst->checkPowerUp()) {
+        inst->powerUpDown();
+    }
     if (!sim900_check_with_cmd(F("AT\r\n"), "OK\r\n", CMD)) {
         return false;
     }
@@ -1258,7 +1261,8 @@ int16_t GPRS::httpSendGetRequest(const __FlashStringHelper* url,
     // fetch additional data which looks like +HTTPACTION: <Method>,<StatusCode>,<DataLen>
     // where "Method" is always 0 (GET request)
     sim900_clean_buffer(receiveBuffer, sizeof(receiveBuffer));
-    if (sim900_read_string_until(receiveBuffer, sizeof(receiveBuffer), "+HTTPACTION: 0,", 15, 15000) == NULL) {
+    if (sim900_read_string_until(receiveBuffer, sizeof(receiveBuffer), "+HTTPACTION:0,", 15, 15000) == NULL) {
+        DEBUG("Error reading buffer");
         return -1;
     }
 

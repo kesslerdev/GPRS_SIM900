@@ -68,12 +68,13 @@ void sim900_read_buffer(char* buffer, int count, unsigned int timeout, unsigned 
     unsigned long timerStart, prevChar;
     timerStart = millis();
     prevChar = 0;
+    DEBUG("-"); 
     while (1) {
         while (sim900_check_readable()) {
             char c = serialSIM900->read();
             prevChar = millis();
             buffer[i++] = c;
-            DEBUG("-"); DEBUG(c);
+            DEBUG(c);
             if (i >= count) {
                 break;
             }
@@ -117,14 +118,18 @@ char* sim900_read_string_until(char* buffer, uint16_t count, const char* pattern
         }
 
         if (i >= count) {
+            DEBUG("i >= count");
             break;
         }
 
         if ((unsigned long)(millis() - timerStart) > timeout * 1000UL) {
+            DEBUG("timer >= timeout");
             break;
         }
         //If interchar Timeout => return FALSE. So we can return sooner from this function. Not DO it if we dont recieve at least one char (prevChar <> 0)
-        if (((unsigned long)(millis() - prevChar) > chartimeout) && (prevChar != 0)) {
+        if (((unsigned long)(millis() - prevChar) > chartimeout) && (sum > 0)) {
+            DEBUG(prevChar);
+            DEBUG(" sooner exit!");
             break;
         }
     }
@@ -184,10 +189,10 @@ boolean sim900_wait_for_resp(const char* resp, DataType type, unsigned int timeo
     unsigned long timerStart, prevChar;    //prevChar is the time when the previous Char has been read.
     timerStart = millis();
     prevChar = 0;
+    DEBUG("-");
     while (1) {
         if (sim900_check_readable()) {
             char c = serialSIM900->read();
-            DEBUG("-");
             DEBUG(c);
             prevChar = millis();
             sum = (c == resp[sum]) ? sum + 1 : 0;
